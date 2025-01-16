@@ -1,0 +1,10 @@
+$TTL 1D
+@          IN         SOA          dns          loong.noob.com.      ( {{ ansible_date_time.epoch }} 2D 1D 2W 3W )
+
+@          IN         NS           dns
+@          IN         NS           dns-slave
+
+dns        IN         A            {{ dns_master_IP }}
+dns-slave  IN         A            {{ dns_slave_IP }}
+java       IN         A            {{ java_web_IP }}
+php        IN         A            {{ php_web_IP }}

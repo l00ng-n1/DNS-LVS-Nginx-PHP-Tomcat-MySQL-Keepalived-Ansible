@@ -1,0 +1,48 @@
+global_defs {
+   router_id {{ hostvars[inventory_hostname]['ansible_host'] }}
+   vrrp_skip_check_adv_addr
+   vrrp_garp_interval 0
+   vrrp_gna_interval 0
+}
+
+vrrp_script check_mysql {
+    script "mysqladmin ping"   
+    interval 1
+    weight -30
+    fall 3
+    rise 2
+    timeout 2
+}
+
+vrrp_instance VI_1 {
+{% if inventory_hostname == 'mysql_node2' %}
+    state MASTER
+{% else %}
+    state BACKUP
+{% endif %}
+    interface eth1
+    virtual_router_id 66
+    priority {{ ansible_facts['default_ipv4']['address'].split('.')[-1] | int % 30 + 70 }}
+    advert_int 1
+    
+    authentication {
+        auth_type PASS
+        auth_pass 123456
+    }
+    
+    virtual_ipaddress {
+        192.168.74.100/24 dev eth1 label eth1:1
+    }
+    
+    track_script {
+        check_mysql    
+    }
+
+    unicast_src_ip {{ hostvars[inventory_hostname]['ansible_host'] }}
+    unicast_peer {
+{% for ip in groups['mysql'] | difference([inventory_hostname]) | map('extract', hostvars, 'ansible_host') | list %}
+        {{ ip }}
+{% endfor %}
+    
+    }
+}

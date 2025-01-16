@@ -1,0 +1,52 @@
+---
+# This playbook deploys the whole application stack in this site.
+
+#- name: apt update
+#  hosts: all
+#  remote_user: root
+#
+#  tasks:
+#    - name: apt update
+#      apt:
+#        update_cache: yes
+#
+
+- name: Setup Master and Slave DNS
+  hosts: dns
+  remote_user: root
+  vars:
+    dns_master_IP: "{{ hostvars['dns_master']['ansible_host'] }}"
+    dns_slave_IP:  "{{ hostvars['dns_slave']['ansible_host'] }}"
+    java_web_IP:   "{{ hostvars['lvs']['java-VIP'] }}"
+    php_web_IP:    "{{ hostvars['lvs']['php-VIP'] }}"
+
+  roles:
+    - dns
+
+- name: Setup nginx_php_tomcat and RS
+  hosts: nginx_php_tomcat 
+  remote_user: root
+  vars:
+    php_version: "8.1"
+    java_version: "8"
+    tomcat_version: "9"
+  
+  roles:
+    - nginx_php_tomcat
+
+- name: Setup MySQL
+  hosts: mysql
+  remote_user: root
+  
+  roles:
+    - mysql
+
+- name: Setup LVS
+  hosts: LVS
+  remote_user: root
+  vars:
+    php_web_IP:     "{{ hostvars['lvs']['php-VIP'] }}"
+    java_web_IP:    "{{ hostvars['lvs']['java-VIP'] }}"
+
+  roles:
+    - lvs

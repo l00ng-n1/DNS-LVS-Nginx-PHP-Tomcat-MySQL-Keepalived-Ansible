@@ -1,0 +1,10 @@
+- name: Add cron task to backup mysql data to devops
+  lineinfile:
+    path: /etc/crontab
+    line: 5  *    * * *   root    /mysql_backup.sh
+
+- name: Copy backup_mysql shell script to remote
+  copy:
+    src: /tmp/mysql_backup.sh
+    dest: /
+    mode: '0755'

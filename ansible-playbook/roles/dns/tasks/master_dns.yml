@@ -1,0 +1,26 @@
+- name: Install bind9
+  apt:
+    name: "bind9"
+    state: present
+
+- name: Create dns rule
+  template:
+    src: db.m61-magedu.com.j2
+    dest: /etc/bind/db.m61-magedu.com
+
+- name: Add named conf
+  blockinfile:
+    path: /etc/bind/named.conf.default-zones
+    marker: "// {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      zone "m61-magedu.com" {
+          type master;
+          file "/etc/bind/db.m61-magedu.com";
+          allow-transfer { {{ hostvars['dns_slave']['ansible_host'] }}; };
+      };
+
+- name: Check zone
+  shell: named-checkzone m61-magedu.com /etc/bind/db.m61-magedu.com
+
+- name: rndc reload
+  shell: rndc reload

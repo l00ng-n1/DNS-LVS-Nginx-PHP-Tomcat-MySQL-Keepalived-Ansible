@@ -1,0 +1,12 @@
+---
+# tasks file for nginx_php_tomcat
+
+- include_tasks: php.yml
+
+- include_tasks: java.yml
+
+- include_tasks: nginx.yml
+
+- include_tasks: tomcat.yml
+
+- include_tasks: lvs_RS.yml

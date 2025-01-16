@@ -1,0 +1,19 @@
+- name: Add VIP to lo
+  shell: ip a a 10.0.0.100/32 dev lo label lo:1
+  ignore_errors: yes
+
+- name: Add VIP to lo
+  shell: ip a a 10.0.0.101/32 dev lo label lo:2                                                                                                                                                    
+  ignore_errors: yes
+
+- name: RS调整内核参数
+  blockinfile:
+    path: /etc/sysctl.conf
+    block: |
+      net.ipv4.conf.all.arp_ignore=1
+      net.ipv4.conf.all.arp_announce=2
+      net.ipv4.conf.lo.arp_ignore=1
+      net.ipv4.conf.lo.arp_announce=2
+
+- name: sysctl -p
+  shell: sysctl -p

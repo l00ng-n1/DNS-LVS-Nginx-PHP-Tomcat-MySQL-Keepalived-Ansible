@@ -1,0 +1,41 @@
+---
+# tasks file for mysql_role
+
+- name: Install MySQL server
+  apt:
+    name: mysql-server
+    state: present 
+
+- name: Change bind address
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: 'bind-address        = 0.0.0.0'
+
+- name: Install python for MySQL
+  apt:
+    name:
+      - python3
+      - python3-pip
+      - python3-dev
+      - default-libmysqlclient-dev
+      - build-essential
+      - pkg-config
+    state: present
+  retries: 3
+  delay: 10
+
+- name: pip mysqlclient
+  pip:
+    name: mysqlclient
+    executable: pip3
+  retries: 3
+  delay: 10
+
+- include_tasks: server_db.yml  
+
+- include_tasks: master_master.yml
+
+- include_tasks: mysql_keepalived.yml
+
+- include_tasks: mysql_cron_backup.yml

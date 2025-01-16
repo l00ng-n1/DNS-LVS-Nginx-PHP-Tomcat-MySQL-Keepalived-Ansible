@@ -1,0 +1,8 @@
+---
+# tasks file for dns_role
+
+- include_tasks: master_dns.yml
+  when: inventory_hostname == "dns_master"
+
+- include_tasks: slave_dns.yml
+  when: inventory_hostname == "dns_slave"

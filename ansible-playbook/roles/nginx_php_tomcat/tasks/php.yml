@@ -1,0 +1,20 @@
+- name: Install php
+  apt:
+    name: 
+      - php{{ php_version }}-fpm
+      - php{{ php_version }}-mysqli
+      - php{{ php_version }}-xml
+      - php{{ php_version }}
+    state: present   
+
+- name: Bind port
+  lineinfile:
+    path: /etc/php/{{ php_version }}/fpm/pool.d/www.conf
+    regexp: '^listen ='
+    line: 'listen = 127.0.0.1:9000'
+
+- name: restart and enable php-fpm
+  service:
+    name: php{{ php_version }}-fpm
+    state: restarted
+    enabled: true

@@ -1,0 +1,41 @@
+---
+# tasks file for lvs
+
+- name: install ipvsadm
+  apt:
+    name: ipvsadm
+    state: present
+
+- name: Add php-VIP to eth0
+  shell: ip a a 10.0.0.100/32 dev eth0 label eth0:1                                                                                      
+  ignore_errors: yes
+
+- name: Add java-VIP to eth0
+  shell: ip a a 10.0.0.101/32 dev eth0 label eth0:2                                                                              
+  ignore_errors: yes
+
+- name: Open ip forward
+  blockinfile:
+    path: /etc/sysctl.conf
+    block: |
+      net.ipv4.ip_forward=1
+
+- name: sysctl -p
+  shell: sysctl -p
+
+- name: Add rules ipvsadm
+  blockinfile:
+    path: /etc/ipvsadm.rules
+    block: |
+      -A -t {{ php_web_IP }}:80 -s sh
+      -a -t {{ php_web_IP }}:80 -r {{ hostvars['web_node1']['ansible_host'] }}:80 -m
+      -a -t {{ php_web_IP }}:80 -r {{ hostvars['web_node2']['ansible_host'] }}:80 -m
+      -A -t {{ java_web_IP }}:80 -s sh
+      -a -t {{ java_web_IP }}:80 -r {{ hostvars['web_node1']['ansible_host'] }}:80 -m
+      -a -t {{ java_web_IP }}:80 -r {{ hostvars['web_node2']['ansible_host'] }}:80 -m
+
+- name: Clean rule
+  shell: ipvsadm -C
+
+- name: Load rule
+  shell: ipvsadm-restore < /etc/ipvsadm.rules

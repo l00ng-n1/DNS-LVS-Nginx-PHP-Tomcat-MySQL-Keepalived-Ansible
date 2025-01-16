@@ -1,0 +1,64 @@
+- name: Create repluser user
+  mysql_user:
+    name: repluser
+    host: '192.168.74.%'
+    password: 123456
+    state: present
+    login_user: root
+    login_password: 123456
+
+- name: Repluser priv
+  mysql_user:
+    name: repluser
+    host: '192.168.74.%'
+    priv: '*.*:REPLICATION SLAVE'
+    state: present
+    login_user: root
+    login_password: 123456
+
+- name: FLUSH PRIVILEGES
+  mysql_query:
+    query: "FLUSH PRIVILEGES;"
+    login_user: root
+    login_password: 123456
+
+- name: Add MySQL conf
+  blockinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+    block: |
+      server-id={{ ansible_facts['default_ipv4']['address'].split('.')[-1] }}
+      log_bin=/var/log/mysql/mysql-bin.log
+      default_authentication_plugin=mysql_native_password
+      gtid_mode=ON
+      enforce_gtid_consistency=ON
+
+- name: restart and enable mysql
+  service:
+    name: mysql
+    state: restarted
+    enabled: true
+
+- name: Stop slave
+  mysql_query:
+    query: "stop slave;"
+    login_user: root
+    login_password: 123456
+
+- name: Slave conf
+  mysql_query:
+    query: >
+      CHANGE MASTER TO 
+      MASTER_HOST='{{ groups['mysql'] | difference([inventory_hostname]) | map('extract', hostvars, 'ansible_host') | list | first}}', 
+      MASTER_USER='repluser', 
+      MASTER_PASSWORD='123456', 
+      MASTER_PORT=3306, 
+      MASTER_AUTO_POSITION=1;
+    login_user: root
+    login_password: 123456
+
+- name: Start slave
+  mysql_query:
+    query: "start slave;"
+    login_user: root
+    login_password: 123456

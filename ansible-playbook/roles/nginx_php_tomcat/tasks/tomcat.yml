@@ -1,0 +1,51 @@
+- name: Install tomcat                                                                                                
+  apt:
+    name: tomcat{{ tomcat_version }}
+    state: present
+
+- name: Jpress
+  block:
+    - name: Copy jpress to remote
+      copy:
+        src:  /tmp/jpress.tar.gz
+        dest: /tmp/jpress.tar.gz
+  rescue:
+    - name: Download discuz
+      get_url:
+        url: "https://github.com/JPressProjects/jpress/archive/refs/tags/v5.1.1.tar.gz"
+        dest: "/tmp/jpress.tar.gz"
+
+- name: unarchive
+  unarchive:
+    src: /tmp/jpress.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Remove default ROOT
+  file:
+    path: /var/lib/tomcat{{ tomcat_version }}/webapps/ROOT
+    state: absent
+
+- name: Copy jpress war
+  copy:
+    src: /tmp/jpress/starter-tomcat/target/starter-tomcat-5.0.war
+    dest: /var/lib/tomcat{{ tomcat_version }}/webapps/ROOT.war
+    remote_src: yes
+
+- name: Copy jpress class
+  ansible.builtin.copy:
+    src: /tmp/jpress/starter-tomcat/target/classes/
+    dest: /etc/tomcat{{ tomcat_version }}/
+    remote_src: yes
+
+- name: Change tomcat addree to 127.0.0.1
+  lineinfile:
+    path: /etc/tomcat{{ tomcat_version }}/server.xml
+    insertafter: '<Connector port="8080" protocol="HTTP/1.1"'
+    line: '               address="127.0.0.1"'
+
+- name: restart and enable tomcat
+  service:
+    name: tomcat{{ tomcat_version }}
+    state: restarted
+    enabled: true

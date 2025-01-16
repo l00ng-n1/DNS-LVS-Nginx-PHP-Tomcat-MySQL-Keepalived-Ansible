@@ -1,0 +1,49 @@
+- name: Create discuzer user
+  mysql_user:
+    name: discuzer
+    host: '192.168.74.%'
+    password: 123456
+    state: present
+    login_user: root
+    login_password: 123456
+
+- name: Create jpresser user
+  mysql_user:
+    name: jpresser
+    host: '192.168.74.%'
+    password: 123456
+    state: present
+    login_user: root
+    login_password: 123456
+
+- name: Create discuz 
+  mysql_db:
+    name: discuz                                                                                                                                                
+    state: present                                                                                                                                                                                 
+    login_user: root
+    login_password: 123456
+
+- name: Create jpress database
+  mysql_db:
+    name: jpress                                                                                                                                                                                 
+    state: present
+    login_user: root
+    login_password: 123456     
+
+- name: Discuzer priv
+  mysql_user:
+    name: discuzer
+    host: '192.168.74.%'
+    priv: 'discuz.*:ALL'
+    state: present
+    login_user: root
+    login_password: 123456
+
+- name: Jpresser priv
+  mysql_user:
+    name: jpresser
+    host: '192.168.74.%'
+    priv: 'jpress.*:ALL'
+    state: present
+    login_user: root
+    login_password: 123456

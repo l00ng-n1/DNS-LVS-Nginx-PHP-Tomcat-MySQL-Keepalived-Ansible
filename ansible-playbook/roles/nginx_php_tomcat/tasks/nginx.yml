@@ -1,0 +1,55 @@
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Del default
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Add php conf
+  template:
+    src: php.m61-magedu.com.j2
+    dest: /etc/nginx/conf.d/php.m61-magedu.com.conf
+
+- name: Add java conf
+  template:
+    src: java.m61-magedu.com.j2
+    dest: /etc/nginx/conf.d/java.m61-magedu.com.conf
+
+- name: Discuz
+  block:
+    - name: Copy discuz to remote
+      copy:
+        src:  /tmp/discuz.zip
+        dest: /tmp/discuz.zip
+  rescue:
+    - name: Download discuz
+      get_url:
+        url: "https://gitee.com/Discuz/DiscuzX/attach_files/1773967/download"
+        dest: "/tmp/discuz.zip"
+
+- name: Create dir discuz
+  file:
+    path: /var/www/html/discuz
+    state: directory
+
+- name: Ensure unzip is installed
+  apt:
+    name: unzip
+    state: present
+
+- name: unzip
+  unarchive:
+    src: /tmp/discuz.zip
+    dest: /var/www/html/discuz
+    owner: www-data
+    group: www-data
+    remote_src: yes
+
+- name: restart and enable nginx
+  service:
+    name: nginx
+    state: restarted
+    enabled: true
