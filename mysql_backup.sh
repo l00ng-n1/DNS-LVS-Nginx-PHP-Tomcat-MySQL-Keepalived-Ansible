@@ -3,7 +3,7 @@
 REMOTE_HOST="192.168.74.12"
 REMOTE_DIR="/data/"
 
-IP_ADDRESS=$(ip addr show eth1 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)
+IP_ADDRESS=$(ip addr show eth1 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1 | head -n1)
 
 # 当前日期
 DATE=$(date +\%Y_\%m_\%d)

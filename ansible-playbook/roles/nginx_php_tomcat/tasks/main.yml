@@ -10,3 +10,5 @@
 - include_tasks: tomcat.yml
 
 - include_tasks: lvs_RS.yml
+
+- include_tasks: nginx_keepalived.yml

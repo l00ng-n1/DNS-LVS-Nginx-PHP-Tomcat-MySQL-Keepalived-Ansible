@@ -2,3 +2,5 @@
   apt:
     name: openjdk-{{ java_version }}-jdk
     state: present
+  retries: 5
+  delay: 10

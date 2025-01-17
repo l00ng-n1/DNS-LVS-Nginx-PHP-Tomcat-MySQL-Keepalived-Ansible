@@ -9,7 +9,8 @@
 #    - name: apt update
 #      apt:
 #        update_cache: yes
-#
+#      retries: 5
+#      delay: 120
 
 - name: Setup Master and Slave DNS
   hosts: dns
@@ -30,6 +31,8 @@
     php_version: "8.1"
     java_version: "8"
     tomcat_version: "9"
+    nginx_php_VIP:  "192.168.74.101"
+    nginx_java_VIP: "192.168.74.102"
   
   roles:
     - nginx_php_tomcat
@@ -47,6 +50,8 @@
   vars:
     php_web_IP:     "{{ hostvars['lvs']['php-VIP'] }}"
     java_web_IP:    "{{ hostvars['lvs']['java-VIP'] }}"
+    nginx_php_VIP:  "192.168.74.101" 
+    nginx_java_VIP: "192.168.74.102"
 
   roles:
     - lvs
